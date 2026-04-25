@@ -3,6 +3,7 @@ import { Header } from '../components/Header';
 import { AdminNav } from '../components/AdminNav';
 import { orderService } from '../services/orderService';
 import { cycleService } from '../services/cycleService';
+import axiosInstance from '../api/axios';
 
 export default function AdminDashboard() {
   const [cycle, setCycle] = useState(null);
@@ -83,14 +84,30 @@ export default function AdminDashboard() {
 
   const handleConfirmPickup = async () => {
     if (selectedIds.size === 0) return;
+    const count = selectedIds.size;
+    const idsToUpdate = new Set(selectedIds);
     setConfirming(false);
+    setSelectedIds(new Set());
     try {
-      await Promise.all([...selectedIds].map(id => orderService.togglePickup(id)));
-      setOrders(prev => prev.map(o =>
-        selectedIds.has(o.id) ? { ...o, pickedUp: !o.pickedUp } : o
-      ));
-      setSelectedIds(new Set());
-      setSuccess(`Đã cập nhật ${selectedIds.size} đơn`);
+      await Promise.all([...idsToUpdate].map(id => orderService.togglePickup(id)));
+      setOrders(prev => {
+        const updated = prev.map(o =>
+          idsToUpdate.has(o.id) ? { ...o, pickedUp: !o.pickedUp } : o
+        );
+        // Re-apply current filter on updated data
+        const refiltered = updated.filter(o => {
+          const matchStatus = !statusFilter
+            || (statusFilter === 'picked' && o.pickedUp)
+            || (statusFilter === 'unpicked' && !o.pickedUp);
+          const matchSearch = !searchTerm
+            || o.username?.toLowerCase().includes(searchTerm.toLowerCase())
+            || o.memberName?.toLowerCase().includes(searchTerm.toLowerCase());
+          return matchStatus && matchSearch;
+        });
+        setFilteredOrders(refiltered);
+        return updated;
+      });
+      setSuccess(`Đã cập nhật ${count} đơn`);
       setTimeout(() => setSuccess(''), 2000);
     } catch (err) {
       setError('Không thể cập nhật trạng thái');
@@ -99,20 +116,17 @@ export default function AdminDashboard() {
 
   const handleExportExcel = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
-      const response = await fetch(`${baseUrl}/export/excel`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axiosInstance.get('/export/excel', {
+        responseType: 'blob',
       });
-      if (!response.ok) throw new Error('Export failed');
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(response.data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `danh-sach-don-hang-${new Date().toISOString().slice(0,10)}.xlsx`;
+      a.download = `danh-sach-don-hang-${new Date().toISOString().slice(0, 10)}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
+      console.error('Export error:', err);
       setError('Không thể xuất Excel');
     }
   };

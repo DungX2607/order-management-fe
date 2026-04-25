@@ -40,29 +40,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const loadData = async () => {
-    try {
-      const cycleData = await cycleService.getCurrentCycle();
-      setCycle(cycleData);
-      
-      // Load orders with filters
-      const ordersData = await orderService.getAllOrders(statusFilter, searchTerm);
-      setOrders(ordersData);
-      setFilteredOrders(ordersData);
-    } catch (err) {
-      setError('Không thể tải dữ liệu');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Reload data when filters change
-  useEffect(() => {
-    if (!loading) {
-      loadData();
-    }
-  }, [statusFilter, searchTerm]);
-
   const handleOpenCycle = async () => {
     if (!confirm('Bạn có chắc muốn mở chu kỳ mới?')) return;
     try {

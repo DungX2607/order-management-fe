@@ -275,10 +275,13 @@ export default function AdminDashboard() {
           {selectedIds.size > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', padding: '0.75rem 1rem', backgroundColor: '#e8f5e9', borderRadius: '6px' }}>
               <span>Đã chọn <strong>{selectedIds.size}</strong> đơn</span>
-              <button className="btn" onClick={() => setConfirming(true)}>
+              <button className="btn" onClick={() => { setTargetPickedUp(true); setConfirming(true); }}>
                 ✅ Xác nhận đã lấy
               </button>
-              <button className="btn btn-danger" onClick={() => setSelectedIds(new Set())}>
+              <button className="btn btn-danger" onClick={() => { setTargetPickedUp(false); setConfirming(true); }}>
+                ↩ Hủy đã lấy
+              </button>
+              <button className="btn btn-secondary" onClick={() => setSelectedIds(new Set())}>
                 Bỏ chọn
               </button>
             </div>
@@ -288,9 +291,14 @@ export default function AdminDashboard() {
           {confirming && (
             <div style={styles.overlay}>
               <div style={styles.dialog}>
-                <p>Xác nhận cập nhật trạng thái cho <strong>{selectedIds.size}</strong> đơn?</p>
+                <p>
+                  {targetPickedUp
+                    ? <span>Xác nhận <strong>đánh dấu đã lấy</strong> cho <strong>{selectedIds.size}</strong> đơn?</span>
+                    : <span>Xác nhận <strong>hủy trạng thái đã lấy</strong> cho <strong>{selectedIds.size}</strong> đơn?</span>
+                  }
+                </p>
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                  <button className="btn btn-danger" onClick={() => setConfirming(false)}>Hủy</button>
+                  <button className="btn btn-secondary" onClick={() => setConfirming(false)}>Hủy</button>
                   <button className="btn" onClick={handleConfirmPickup}>OK</button>
                 </div>
               </div>

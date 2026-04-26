@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [success, setSuccess] = useState('');
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [confirming, setConfirming] = useState(false);
+  const [targetPickedUp, setTargetPickedUp] = useState(true);
 
   useEffect(() => {
     loadData();
@@ -89,12 +90,13 @@ export default function AdminDashboard() {
     setConfirming(false);
     setSelectedIds(new Set());
     try {
-      await Promise.all([...idsToUpdate].map(id => orderService.togglePickup(id)));
+      // Chỉ gọi API cho những đơn có trạng thái khác với targetPickedUp
+      const ordersToChange = orders.filter(o => idsToUpdate.has(o.id) && o.pickedUp !== targetPickedUp);
+      await Promise.all(ordersToChange.map(o => orderService.togglePickup(o.id)));
       setOrders(prev => {
         const updated = prev.map(o =>
-          idsToUpdate.has(o.id) ? { ...o, pickedUp: !o.pickedUp } : o
+          idsToUpdate.has(o.id) ? { ...o, pickedUp: targetPickedUp } : o
         );
-        // Re-apply current filter on updated data
         const refiltered = updated.filter(o => {
           const matchStatus = !statusFilter
             || (statusFilter === 'picked' && o.pickedUp)
@@ -119,15 +121,35 @@ export default function AdminDashboard() {
       const response = await axiosInstance.get('/export/excel', {
         responseType: 'blob',
       });
+
+      // Lấy tên file từ header nếu có, fallback về tên mặc định
+      const disposition = response.headers['content-disposition'];
+      let filename = `danh-sach-don-hang-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      if (disposition) {
+        const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';\n]+)/i);
+        if (match) filename = decodeURIComponent(match[1]);
+      }
+
       const url = URL.createObjectURL(response.data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `danh-sach-don-hang-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = filename;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Export error:', err);
-      setError('Không thể xuất Excel');
+      // Khi responseType là blob, cần đọc error body thủ công
+      let message = err.message;
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          message = json.message || message;
+        } catch (_) { /* giữ nguyên message gốc */ }
+      }
+      console.error('Export error:', err.response?.status, message);
+      setError(`Không thể xuất Excel: ${message}`);
     }
   };
 

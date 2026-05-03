@@ -1,0 +1,889 @@
+/* ============================================
+   Animation Configuration & Base Styles
+   ============================================ */
+
+:root {
+  /* Durations */
+  --anim-duration-fast: 100ms;
+  --anim-duration-normal: 200ms;
+  --anim-duration-medium: 300ms;
+  --anim-duration-slow: 400ms;
+  --anim-duration-slower: 600ms;
+  
+  /* Easing Functions */
+  --anim-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --anim-ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --anim-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Distances */
+  --anim-slide-distance: 20px;
+  --anim-scale-small: 0.95;
+  --anim-scale-large: 1.05;
+}
+
+/* ============================================
+   Reduced Motion Override
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim-duration-fast: 50ms;
+    --anim-duration-normal: 50ms;
+    --anim-duration-medium: 50ms;
+    --anim-duration-slow: 50ms;
+    --anim-duration-slower: 50ms;
+  }
+  
+  /* Disable non-essential animations */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   Keyframe Definitions
+   ============================================ */
+
+/* Fade In */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide In Right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(var(--anim-slide-distance));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Scale In */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(var(--anim-scale-small));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Pulse */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* Row Pulse - For table row updates */
+@keyframes rowPulse {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: #e8f5e9;
+  }
+}
+
+/* Shimmer (Loading Effect) */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Spinner Rotation - Smooth infinite rotation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   Utility Animation Classes
+   ============================================ */
+
+/* Fade In */
+.fade-in {
+  animation: fadeIn var(--anim-duration-medium) var(--anim-ease-out);
+  will-change: opacity;
+}
+
+/* Slide In Right */
+.slide-in-right {
+  animation: slideInRight var(--anim-duration-medium) var(--anim-ease-out);
+  will-change: opacity, transform;
+}
+
+/* Scale In */
+.scale-in {
+  animation: scaleIn var(--anim-duration-slow) var(--anim-ease-out);
+  will-change: opacity, transform;
+}
+
+/* Pulse */
+.pulse {
+  animation: pulse 2s var(--anim-ease-in-out) infinite;
+  will-change: opacity, transform;
+}
+
+/* Shimmer (Loading) */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 0%,
+    #e0e0e0 50%,
+    #f0f0f0 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+  will-change: background-position;
+}
+
+/* ============================================
+   Interactive Feedback Animations
+   ============================================ */
+
+/* Button Interactions */
+.btn {
+  transition: transform var(--anim-duration-normal) var(--anim-ease-out),
+              filter var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+.btn:hover:not(:disabled) {
+  transform: scale(var(--anim-scale-large));
+  filter: brightness(1.1);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(var(--anim-scale-small));
+  transition: transform var(--anim-duration-fast);
+}
+
+/* Table Row Hover */
+.table-row,
+table tr {
+  transition: background-color var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+/* Table Row Update Animation */
+.table-row.row-updated,
+table tr.row-updated {
+  animation: rowPulse var(--anim-duration-slower) var(--anim-ease-out);
+}
+
+/* Form Element Focus */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color, #4CAF50);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  transition: border-color var(--anim-duration-normal) var(--anim-ease-out),
+              box-shadow var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+/* Menu Item Card Interaction */
+.menu-item-card {
+  transition: transform var(--anim-duration-normal) var(--anim-ease-out),
+              box-shadow var(--anim-duration-normal) var(--anim-ease-out),
+              background-color var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+.menu-item-card:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item-card:active:not(:disabled) {
+  transform: scale(0.98);
+  transition: transform var(--anim-duration-fast);
+}
+
+/* ============================================
+   Hover Effect Classes
+   ============================================ */
+
+/* Hover Lift Effect */
+.hover-lift {
+  transition: transform var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+/* Button Press Effect */
+.btn-press:active {
+  transform: scale(var(--anim-scale-small));
+  transition: transform var(--anim-duration-fast);
+}
+
+/* ============================================
+   Stagger Delay Classes
+   ============================================ */
+
+.stagger-1 {
+  animation-delay: 100ms;
+}
+
+.stagger-2 {
+  animation-delay: 200ms;
+}
+
+.stagger-3 {
+  animation-delay: 300ms;
+}
+
+/* ============================================
+   Card Component Animations
+   ============================================ */
+
+/* Card Enter Animation */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: scale(var(--anim-scale-small));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Card Animation Class */
+.card {
+  animation: cardEnter var(--anim-duration-slow) var(--anim-ease-out) forwards;
+  will-change: opacity, transform;
+}
+
+/* ============================================
+   Modal/Dialog Animations
+   ============================================ */
+
+/* Modal Enter Animation - Scale + Fade */
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Backdrop Fade Animation */
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  animation: backdropFadeIn var(--anim-duration-normal) var(--anim-ease-out);
+  will-change: opacity;
+}
+
+/* Modal Content */
+.modal-content {
+  animation: modalEnter var(--anim-duration-medium) var(--anim-ease-out);
+  will-change: opacity, transform;
+}
+
+/* Modal Actions - Flexbox Layout */
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start; /* OK button on left, Cancel on right */
+  margin-top: 1rem;
+}
+
+/* ============================================
+   Toast Notification Animations
+   ============================================ */
+
+/* Toast Enter Animation - Slide in from right + Fade */
+@keyframes toastEnter {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Toast Exit Animation - Slide out to right + Fade */
+@keyframes toastExit {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Toast Base Styles */
+.toast {
+  position: static;
+  z-index: 9999;
+  
+  min-width: 300px;
+  max-width: 500px;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  animation: toastEnter var(--anim-duration-medium) var(--anim-ease-out);
+  cursor: pointer;
+  
+  font-size: 0.95rem;
+  font-weight: 500;
+  will-change: opacity, transform;
+}
+
+/* Toast Exit State */
+.toast.toast-exit {
+  animation: toastExit var(--anim-duration-medium) var(--anim-ease-out);
+  will-change: opacity, transform;
+}
+
+/* Toast Variants */
+.toast-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.toast-error {
+  background-color: #f44336;
+  color: white;
+}
+
+/* Toast Content Layout */
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Toast Icon */
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  font-size: 1rem;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+/* Toast Message */
+.toast-message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Toast Container - Manages multiple toasts */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.toast-container .toast {
+  position: static;
+  transform: none;
+  pointer-events: auto;
+}
+
+.toast-container .toast.toast-exit {
+  transform: none;
+}
+
+/* ============================================
+   Enhanced Spinner Animations
+   ============================================ */
+
+/* Base Spinner Styles */
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top: 4px solid var(--primary-color, #4CAF50);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+  /* GPU acceleration for smooth rotation */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Spinner Sizes */
+.spinner-small {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+.spinner-medium {
+  width: 40px;
+  height: 40px;
+  border-width: 4px;
+}
+
+.spinner-large {
+  width: 60px;
+  height: 60px;
+  border-width: 5px;
+}
+
+/* Spinner Colors */
+.spinner-primary {
+  border-top-color: var(--primary-color, #4CAF50);
+}
+
+.spinner-white {
+  border-color: rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+}
+
+.spinner-danger {
+  border-top-color: var(--danger-color, #f44336);
+}
+
+/* ============================================
+   Button Loading States
+   ============================================ */
+
+/* Button with Loading State */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  will-change: transform;
+}
+
+/* Button Loading with Text Visible */
+.btn-loading-with-text {
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.btn-loading-with-text::before {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  will-change: transform;
+}
+
+/* Loading Container - Centers spinner */
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 200px;
+}
+
+/* Inline Spinner - For inline loading states */
+.spinner-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.5rem;
+}
+
+/* ============================================
+   Loading Overlay
+   ============================================ */
+
+/* Full-page or container loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+.loading-overlay-fixed {
+  position: fixed;
+}
+
+/* Loading Text */
+.loading-text {
+  margin-top: 1rem;
+  color: var(--text-color, #333);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ============================================
+   Pulse Loading Animation
+   ============================================ */
+
+/* Alternative loading animation - pulsing dots */
+@keyframes pulse-dot {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+.loading-dots {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--primary-color, #4CAF50);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ============================================
+   Filter Transition Animations
+   ============================================ */
+
+/* Table Row Filter Transitions */
+.table-row-fade-out,
+table tr.table-row-fade-out {
+  animation: fadeOutRow var(--anim-duration-medium) var(--anim-ease-out) forwards;
+}
+
+.table-row-fade-in,
+table tr.table-row-fade-in {
+  animation: fadeInRow var(--anim-duration-medium) var(--anim-ease-out) forwards;
+}
+
+@keyframes fadeOutRow {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes fadeInRow {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   Status Badge Animations
+   ============================================ */
+
+/* Status Badge Transition - Fade out/in on change */
+.status-badge {
+  transition: opacity var(--anim-duration-medium) var(--anim-ease-out),
+              background-color var(--anim-duration-medium) var(--anim-ease-out),
+              color var(--anim-duration-medium) var(--anim-ease-out);
+}
+
+.status-badge.badge-changing {
+  animation: badgeChange var(--anim-duration-slow) var(--anim-ease-out);
+}
+
+@keyframes badgeChange {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   Micro-interactions
+   ============================================ */
+
+/* 12.1 Checkbox Animation - Scale and color transition */
+input[type="checkbox"] {
+  transition: transform var(--anim-duration-normal) var(--anim-ease-out),
+              background-color var(--anim-duration-normal) var(--anim-ease-out),
+              border-color var(--anim-duration-normal) var(--anim-ease-out);
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  transform: scale(1.1);
+  animation: checkboxPop var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+@keyframes checkboxPop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+/* 12.2 Dropdown Animation - Slide down with fade in */
+select {
+  transition: border-color var(--anim-duration-normal) var(--anim-ease-out),
+              box-shadow var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+select:focus {
+  animation: dropdownOpen var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+@keyframes dropdownOpen {
+  from {
+    opacity: 0.8;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dropdown options animation (browser-dependent) */
+select option {
+  animation: fadeIn var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+/* 12.3 Icon Hover Effects - Subtle bounce animation */
+.icon-bounce,
+.emoji-bounce {
+  display: inline-block;
+  transition: transform var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+.icon-bounce:hover,
+.emoji-bounce:hover {
+  animation: iconBounce 0.5s var(--anim-bounce);
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-4px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  75% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Apply to common icon/emoji selectors */
+button:not(:disabled) > span:first-child:only-child,
+.btn:not(:disabled) > span:first-child:only-child {
+  display: inline-block;
+  transition: transform var(--anim-duration-normal) var(--anim-ease-out);
+}
+
+button:not(:disabled):hover > span:first-child:only-child,
+.btn:not(:disabled):hover > span:first-child:only-child {
+  animation: iconBounce 0.5s var(--anim-bounce);
+}
+
+/* 12.4 Active Cycle Badge Pulse - Subtle pulse for "Đang mở" status */
+.cycle-status-badge.status-open {
+  animation: cyclePulse 2s var(--anim-ease-in-out) infinite;
+  will-change: opacity, box-shadow;
+}
+
+@keyframes cyclePulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(21, 87, 36, 0.4);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 0 4px rgba(21, 87, 36, 0);
+  }
+}
+
+/* 12.5 Scroll-triggered Animations - Fade in when entering viewport */
+.scroll-fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--anim-duration-slow) var(--anim-ease-out),
+              transform var(--anim-duration-slow) var(--anim-ease-out);
+  will-change: opacity, transform;
+}
+
+.scroll-fade-in.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Apply to cards in long lists */
+.card-grid .card,
+.long-list .card {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--anim-duration-slow) var(--anim-ease-out),
+              transform var(--anim-duration-slow) var(--anim-ease-out);
+  will-change: opacity, transform;
+}
+
+.card-grid .card.fade-in,
+.long-list .card.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   Reduced Motion Support
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .btn-loading::after,
+  .btn-loading-with-text::before {
+    animation-duration: 2s; /* Slower rotation */
+  }
+  
+  .loading-dot {
+    animation: none;
+    opacity: 0.6;
+  }
+  
+  /* Disable micro-interaction animations */
+  input[type="checkbox"]:checked {
+    animation: none;
+    transform: scale(1);
+  }
+  
+  select:focus {
+    animation: none;
+  }
+  
+  .icon-bounce:hover,
+  .emoji-bounce:hover,
+  button:not(:disabled):hover > span:first-child:only-child,
+  .btn:not(:disabled):hover > span:first-child:only-child {
+    animation: none;
+  }
+  
+  .cycle-status-badge.status-open {
+    animation: none;
+  }
+  
+  .scroll-fade-in,
+  .card-grid .card,
+  .long-list .card {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  
+  /* Remove will-change in reduced motion mode to save resources */
+  * {
+    will-change: auto !important;
+  }
+}

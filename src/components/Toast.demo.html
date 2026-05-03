@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toast Notification Demo</title>
+  <style>
+    /* Import animation styles */
+    :root {
+      --anim-duration-fast: 100ms;
+      --anim-duration-normal: 200ms;
+      --anim-duration-medium: 300ms;
+      --anim-duration-slow: 400ms;
+      --anim-duration-slower: 600ms;
+      
+      --anim-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --anim-ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+      --anim-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      
+      --anim-slide-distance: 20px;
+      --anim-scale-small: 0.95;
+      --anim-scale-large: 1.05;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root {
+        --anim-duration-fast: 50ms;
+        --anim-duration-normal: 50ms;
+        --anim-duration-medium: 50ms;
+        --anim-duration-slow: 50ms;
+        --anim-duration-slower: 50ms;
+      }
+    }
+
+    /* Toast Animations */
+    @keyframes toastEnter {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes toastExit {
+      from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+    }
+
+    /* Toast Styles */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      
+      min-width: 300px;
+      max-width: 500px;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      
+      animation: toastEnter var(--anim-duration-medium) var(--anim-ease-out);
+      cursor: pointer;
+      
+      font-size: 0.95rem;
+      font-weight: 500;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .toast.toast-exit {
+      animation: toastExit var(--anim-duration-medium) var(--anim-ease-out);
+    }
+
+    .toast-success {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .toast-error {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .toast-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toast-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.2);
+      font-size: 1rem;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .toast-message {
+      flex: 1;
+      line-height: 1.4;
+    }
+
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      pointer-events: none;
+    }
+
+    .toast-container .toast {
+      position: static;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    /* Demo Page Styles */
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    .description {
+      color: #666;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .btn-success {
+      background-color: #4caf50;
+      color: white;
+    }
+
+    .btn-error {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .btn-multiple {
+      background-color: #2196F3;
+      color: white;
+    }
+
+    .features {
+      background-color: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-top: 2rem;
+    }
+
+    .features h2 {
+      color: #333;
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .features ul {
+      color: #666;
+      line-height: 1.8;
+    }
+
+    .features li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>🎉 Toast Notification System Demo</h1>
+    
+    <div class="description">
+      <p>
+        Toast notifications provide temporary, non-intrusive feedback to users. 
+        They appear at the bottom center of the screen, auto-dismiss after 3 seconds, 
+        and can be manually dismissed by clicking.
+      </p>
+    </div>
+
+    <div class="button-group">
+      <button class="btn-success" onclick="showSuccessToast()">
+        Show Success Toast
+      </button>
+      
+      <button class="btn-error" onclick="showErrorToast()">
+        Show Error Toast
+      </button>
+      
+      <button class="btn-multiple" onclick="showMultipleToasts()">
+        Show Multiple Toasts
+      </button>
+    </div>
+
+    <div class="features">
+      <h2>✨ Features</h2>
+      <ul>
+        <li><strong>Auto-dismiss:</strong> Toasts automatically disappear after 3 seconds</li>
+        <li><strong>Manual dismiss:</strong> Click on a toast to dismiss it immediately</li>
+        <li><strong>Smooth animations:</strong> Slide in from bottom with fade effect</li>
+        <li><strong>Multiple toasts:</strong> Stack multiple toasts vertically</li>
+        <li><strong>Success/Error variants:</strong> Green for success, red for errors</li>
+        <li><strong>Accessibility:</strong> Respects prefers-reduced-motion setting</li>
+        <li><strong>Responsive:</strong> Works on all screen sizes</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    let toastId = 0;
+
+    function createToast(message, type) {
+      const id = toastId++;
+      const container = document.getElementById('toastContainer');
+      
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'polite');
+      
+      const content = document.createElement('div');
+      content.className = 'toast-content';
+      
+      const icon = document.createElement('span');
+      icon.className = 'toast-icon';
+      icon.textContent = type === 'success' ? '✓' : '✕';
+      
+      const messageSpan = document.createElement('span');
+      messageSpan.className = 'toast-message';
+      messageSpan.textContent = message;
+      
+      content.appendChild(icon);
+      content.appendChild(messageSpan);
+      toast.appendChild(content);
+      
+      container.appendChild(toast);
+      
+      // Auto-dismiss after 3000ms
+      const dismissTimer = setTimeout(() => {
+        toast.classList.add('toast-exit');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
+      
+      // Manual dismiss on click
+      toast.addEventListener('click', () => {
+        clearTimeout(dismissTimer);
+        toast.classList.add('toast-exit');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      });
+    }
+
+    function showSuccessToast() {
+      createToast('Thao tác thành công! Dữ liệu đã được lưu.', 'success');
+    }
+
+    function showErrorToast() {
+      createToast('Có lỗi xảy ra! Vui lòng thử lại sau.', 'error');
+    }
+
+    function showMultipleToasts() {
+      createToast('Toast thứ nhất', 'success');
+      setTimeout(() => createToast('Toast thứ hai', 'error'), 200);
+      setTimeout(() => createToast('Toast thứ ba', 'success'), 400);
+    }
+  </script>
+</body>
+</html>

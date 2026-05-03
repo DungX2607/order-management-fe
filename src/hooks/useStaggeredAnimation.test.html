@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useStaggeredAnimation Hook Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    
+    h2 {
+      color: #555;
+      margin-top: 0;
+    }
+    
+    .test-result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    
+    .test-result.pass {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    
+    .test-result.fail {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    
+    .card-demo {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .card {
+      flex: 1;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.95);
+      animation: cardEnter 400ms ease-out forwards;
+    }
+    
+    @keyframes cardEnter {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    
+    button:hover {
+      background: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 useStaggeredAnimation Hook Test</h1>
+  
+  <div class="test-section">
+    <h2>Unit Tests</h2>
+    <div id="test-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Visual Demo</h2>
+    <p>Click the button to see staggered card animations:</p>
+    <button onclick="animateCards()">Animate Cards</button>
+    <div class="card-demo" id="card-container"></div>
+  </div>
+
+  <script type="module">
+    // Simple implementation of useStaggeredAnimation for testing
+    function useStaggeredAnimation(count, baseDelay) {
+      const delays = Array.from({ length: count }, (_, index) => index * baseDelay);
+      return delays;
+    }
+
+    // Test suite
+    const tests = [
+      {
+        name: 'Should generate correct delays for 3 elements with 100ms base delay',
+        fn: () => {
+          const result = useStaggeredAnimation(3, 100);
+          const expected = [0, 100, 200];
+          return JSON.stringify(result) === JSON.stringify(expected);
+        }
+      },
+      {
+        name: 'Should generate correct delays for 5 elements with 50ms base delay',
+        fn: () => {
+          const result = useStaggeredAnimation(5, 50);
+          const expected = [0, 50, 100, 150, 200];
+          return JSON.stringify(result) === JSON.stringify(expected);
+        }
+      },
+      {
+        name: 'Should handle single element (count=1)',
+        fn: () => {
+          const result = useStaggeredAnimation(1, 100);
+          const expected = [0];
+          return JSON.stringify(result) === JSON.stringify(expected);
+        }
+      },
+      {
+        name: 'Should handle zero base delay',
+        fn: () => {
+          const result = useStaggeredAnimation(3, 0);
+          const expected = [0, 0, 0];
+          return JSON.stringify(result) === JSON.stringify(expected);
+        }
+      },
+      {
+        name: 'Should return empty array for count=0',
+        fn: () => {
+          const result = useStaggeredAnimation(0, 100);
+          const expected = [];
+          return JSON.stringify(result) === JSON.stringify(expected);
+        }
+      },
+      {
+        name: 'Should generate correct delays for 10 elements with 100ms base delay',
+        fn: () => {
+          const result = useStaggeredAnimation(10, 100);
+          const expected = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900];
+          return JSON.stringify(result) === JSON.stringify(expected);
+        }
+      }
+    ];
+
+    // Run tests
+    const resultsContainer = document.getElementById('test-results');
+    let passCount = 0;
+    let failCount = 0;
+
+    tests.forEach(test => {
+      const passed = test.fn();
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      resultDiv.textContent = `${passed ? '✓' : '✗'} ${test.name}`;
+      resultsContainer.appendChild(resultDiv);
+      
+      if (passed) passCount++;
+      else failCount++;
+    });
+
+    // Summary
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = `test-result ${failCount === 0 ? 'pass' : 'fail'}`;
+    summaryDiv.textContent = `Summary: ${passCount} passed, ${failCount} failed`;
+    summaryDiv.style.fontWeight = 'bold';
+    summaryDiv.style.marginTop = '20px';
+    resultsContainer.appendChild(summaryDiv);
+
+    // Visual demo
+    window.animateCards = function() {
+      const container = document.getElementById('card-container');
+      container.innerHTML = '';
+      
+      const delays = useStaggeredAnimation(4, 100);
+      
+      delays.forEach((delay, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.style.animationDelay = `${delay}ms`;
+        card.innerHTML = `
+          <h3>Card ${index + 1}</h3>
+          <p>Delay: ${delay}ms</p>
+        `;
+        container.appendChild(card);
+      });
+    };
+
+    // Initialize with cards
+    animateCards();
+  </script>
+</body>
+</html>

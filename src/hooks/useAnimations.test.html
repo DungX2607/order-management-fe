@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useReducedMotion Hook Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-box {
+      padding: 20px;
+      margin: 20px 0;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: #f0f0f0;
+    }
+    .status {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .status.reduced {
+      color: #d32f2f;
+    }
+    .status.normal {
+      color: #388e3c;
+    }
+    .animated-box {
+      width: 100px;
+      height: 100px;
+      background: #2196f3;
+      margin: 20px 0;
+      transition: transform 0.5s ease-out;
+    }
+    .animated-box.reduced-motion {
+      transition: transform 0.05s ease-out;
+    }
+    .animated-box:hover {
+      transform: scale(1.2) rotate(10deg);
+    }
+    code {
+      background: #e0e0e0;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+    .instructions {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>useReducedMotion Hook Test</h1>
+  
+  <div class="instructions">
+    <h3>How to Test:</h3>
+    <ol>
+      <li><strong>Windows:</strong> Settings → Accessibility → Visual effects → Animation effects (turn off)</li>
+      <li><strong>macOS:</strong> System Preferences → Accessibility → Display → Reduce motion (check)</li>
+      <li><strong>Linux:</strong> Settings → Accessibility → Reduce animation</li>
+    </ol>
+    <p>After changing the setting, the status below should update automatically without refreshing the page.</p>
+  </div>
+
+  <div class="test-box">
+    <h2>Current Status:</h2>
+    <div id="status" class="status">Checking...</div>
+    <p>The hook detects: <code id="hook-value">...</code></p>
+  </div>
+
+  <div class="test-box">
+    <h2>Visual Test:</h2>
+    <p>Hover over the box below. The animation should be:</p>
+    <ul>
+      <li><strong>Normal motion:</strong> Smooth 500ms transition</li>
+      <li><strong>Reduced motion:</strong> Quick 50ms transition</li>
+    </ul>
+    <div id="animated-box" class="animated-box"></div>
+  </div>
+
+  <script type="module">
+    // Simulate the useReducedMotion hook behavior
+    function checkReducedMotion() {
+      if (typeof window === 'undefined' || !window.matchMedia) {
+        return false;
+      }
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
+    function updateStatus() {
+      const prefersReducedMotion = checkReducedMotion();
+      const statusEl = document.getElementById('status');
+      const hookValueEl = document.getElementById('hook-value');
+      const animatedBox = document.getElementById('animated-box');
+
+      if (prefersReducedMotion) {
+        statusEl.textContent = '⚠️ Reduced Motion Enabled';
+        statusEl.className = 'status reduced';
+        hookValueEl.textContent = 'true';
+        animatedBox.classList.add('reduced-motion');
+      } else {
+        statusEl.textContent = '✅ Normal Motion';
+        statusEl.className = 'status normal';
+        hookValueEl.textContent = 'false';
+        animatedBox.classList.remove('reduced-motion');
+      }
+    }
+
+    // Initial check
+    updateStatus();
+
+    // Listen for changes
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    
+    const handleChange = (event) => {
+      console.log('Motion preference changed:', event.matches);
+      updateStatus();
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange);
+    }
+
+    console.log('useReducedMotion test initialized');
+    console.log('Current preference:', checkReducedMotion());
+  </script>
+</body>
+</html>

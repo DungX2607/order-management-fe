@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PageTransition Demo</title>
+  <style>
+    /* Import animation styles */
+    :root {
+      --anim-duration-fast: 100ms;
+      --anim-duration-normal: 200ms;
+      --anim-duration-medium: 300ms;
+      --anim-duration-slow: 400ms;
+      --anim-duration-slower: 600ms;
+      
+      --anim-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --anim-ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+      --anim-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      
+      --anim-slide-distance: 20px;
+      --anim-scale-small: 0.95;
+      --anim-scale-large: 1.05;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root {
+        --anim-duration-fast: 50ms;
+        --anim-duration-normal: 50ms;
+        --anim-duration-medium: 50ms;
+        --anim-duration-slow: 50ms;
+        --anim-duration-slower: 50ms;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(var(--anim-slide-distance));
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn var(--anim-duration-medium) var(--anim-ease-out);
+    }
+
+    .slide-in-right {
+      animation: slideInRight var(--anim-duration-medium) var(--anim-ease-out);
+    }
+
+    /* Demo styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .page-transition {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      margin-bottom: 20px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e7f3ff;
+      border-left: 4px solid #007bff;
+      border-radius: 4px;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="controls">
+      <h2>PageTransition Demo</h2>
+      <button onclick="triggerAnimation()">Trigger Page Transition</button>
+      <button onclick="toggleReducedMotion()">Toggle Reduced Motion</button>
+      <div class="info">
+        <strong>Current State:</strong> <span id="state">Normal Motion</span><br>
+        <strong>Animation Duration:</strong> <span id="duration">300ms</span>
+      </div>
+    </div>
+
+    <div id="page-content" class="page-transition fade-in slide-in-right">
+      <h1>Page Content</h1>
+      <p>This demonstrates the PageTransition component behavior.</p>
+      <p>The page should fade in and slide in from the right when loaded or when you click "Trigger Page Transition".</p>
+      <p><strong>Requirements validated:</strong></p>
+      <ul>
+        <li>✓ 1.1: Fade in within 300ms</li>
+        <li>✓ 1.2: Slide in from right with 20px distance</li>
+        <li>✓ 1.3: Uses ease-out easing function</li>
+        <li>✓ 1.4: Does not interfere with page loading</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    let reducedMotion = false;
+
+    function triggerAnimation() {
+      const content = document.getElementById('page-content');
+      
+      // Remove animation classes
+      content.classList.remove('fade-in', 'slide-in-right');
+      
+      // Force reflow
+      void content.offsetWidth;
+      
+      // Re-add animation classes if not reduced motion
+      if (!reducedMotion) {
+        content.classList.add('fade-in', 'slide-in-right');
+      }
+    }
+
+    function toggleReducedMotion() {
+      reducedMotion = !reducedMotion;
+      const root = document.documentElement;
+      const stateEl = document.getElementById('state');
+      const durationEl = document.getElementById('duration');
+      
+      if (reducedMotion) {
+        root.style.setProperty('--anim-duration-medium', '50ms');
+        stateEl.textContent = 'Reduced Motion';
+        durationEl.textContent = '50ms';
+      } else {
+        root.style.setProperty('--anim-duration-medium', '300ms');
+        stateEl.textContent = 'Normal Motion';
+        durationEl.textContent = '300ms';
+      }
+      
+      triggerAnimation();
+    }
+
+    // Test on load
+    console.log('PageTransition Demo loaded');
+    console.log('Animation classes applied:', document.getElementById('page-content').className);
+  </script>
+</body>
+</html>

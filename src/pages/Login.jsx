@@ -42,8 +42,8 @@ export default function Login() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.loginBox}>
-        <h1 style={styles.title}>🥤 Hệ thống Đặt Nước</h1>
+      <div style={styles.loginBox} className="scale-in">
+        <h1 style={styles.title}><span className="emoji-bounce">🥤</span> Hệ thống Đặt Nước</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Tên đăng nhập</label>
@@ -65,7 +65,7 @@ export default function Login() {
             />
           </div>
           {error && <div className="error">{error}</div>}
-          <button type="submit" className="btn" disabled={loading} style={{ width: '100%' }}>
+          <button type="submit" className="btn btn-press hover-lift" disabled={loading} style={{ width: '100%' }}>
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
@@ -88,7 +88,7 @@ const styles = {
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     width: '100%',
-    maxWidth: '400px',
+    maxWidth: '440px',
   },
   title: {
     textAlign: 'center',

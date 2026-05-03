@@ -121,7 +121,7 @@ export default function MenuManagement() {
         {success && <div className="success" style={{ marginBottom: '1rem' }}>{success}</div>}
 
         {/* Add Category */}
-        <div className="card">
+        <div className="card fade-in">
           <h2>Thêm danh mục mới</h2>
           <form onSubmit={handleCreateCategory}>
             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -145,12 +145,12 @@ export default function MenuManagement() {
                 />
               </div>
             </div>
-            <button type="submit" className="btn">Thêm danh mục</button>
+            <button type="submit" className="btn btn-press hover-lift">Thêm danh mục</button>
           </form>
         </div>
 
         {/* Add Menu Item */}
-        <div className="card">
+        <div className="card scale-in stagger-1">
           <h2>Thêm món đồ uống</h2>
           <form onSubmit={handleCreateMenuItem}>
             <div style={{ display: 'flex', gap: '1rem' }}>
@@ -187,12 +187,12 @@ export default function MenuManagement() {
                 />
               </div>
             </div>
-            <button type="submit" className="btn">Thêm món</button>
+            <button type="submit" className="btn btn-press hover-lift">Thêm món</button>
           </form>
         </div>
 
         {/* Menu List */}
-        <div className="card">
+        <div className="card slide-in-right stagger-2">
           <h2>Danh sách menu</h2>
           {categories.length === 0 ? (
             <p>Chưa có danh mục nào. Hãy thêm danh mục mới.</p>
@@ -213,7 +213,7 @@ export default function MenuManagement() {
                     </h3>
                     <button 
                       onClick={() => handleDeleteCategory(category.id, category.name)}
-                      className="btn btn-danger"
+                      className="btn btn-danger btn-press hover-lift"
                       style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                     >
                       Xóa danh mục
@@ -252,7 +252,7 @@ export default function MenuManagement() {
                             <td>
                               <button 
                                 onClick={() => handleDeleteMenuItem(item.id, item.name)}
-                                className="btn btn-danger"
+                                className="btn btn-danger btn-press hover-lift"
                                 style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                               >
                                 Xóa

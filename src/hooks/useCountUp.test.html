@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useCountUp Hook Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .info {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .info h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+
+    .info ul {
+      line-height: 1.8;
+    }
+
+    .controls {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .controls h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+
+    .controls label {
+      display: block;
+      margin-bottom: 15px;
+      font-weight: 500;
+    }
+
+    .controls input[type="number"] {
+      width: 150px;
+      padding: 8px;
+      margin-left: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .controls button {
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    .controls button:hover {
+      background: #45a049;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      color: #666;
+    }
+
+    .test-section {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
+
+    .test-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+
+    .test-label {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .test-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #4CAF50;
+      min-width: 100px;
+      text-align: right;
+    }
+
+    .status {
+      background: #e8f5e9;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #2e7d32;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔢 useCountUp Hook Test</h1>
+    
+    <div class="info">
+      <h2>Test Instructions</h2>
+      <ul>
+        <li>The hook animates numbers from 0 to target value using requestAnimationFrame</li>
+        <li>Default duration is 500ms with ease-out cubic easing</li>
+        <li>Change the target values and duration to see different animations</li>
+        <li>Click "Trigger Animation" to restart the count-up effect</li>
+        <li>Validates Requirements 5.2 (count-up animation) and 7.4 (requestAnimationFrame)</li>
+      </ul>
+    </div>
+
+    <div class="controls">
+      <h2>Controls</h2>
+      <label>
+        Total Orders:
+        <input type="number" id="totalInput" value="42" min="0" max="9999">
+      </label>
+      <label>
+        Picked Orders:
+        <input type="number" id="pickedInput" value="28" min="0" max="9999">
+      </label>
+      <label>
+        Unpicked Orders:
+        <input type="number" id="unpickedInput" value="14" min="0" max="9999">
+      </label>
+      <label>
+        Duration (ms):
+        <input type="number" id="durationInput" value="500" min="100" max="3000" step="100">
+      </label>
+      <button id="triggerBtn">🔄 Trigger Animation</button>
+      <div class="status" id="status">
+        requestAnimationFrame: <span id="rafStatus">Checking...</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalStat">0</div>
+        <div class="stat-label">Tổng đơn</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="pickedStat">0</div>
+        <div class="stat-label">Đã lấy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="unpickedStat">0</div>
+        <div class="stat-label">Chưa lấy</div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Animation Details</h2>
+      <div class="test-row">
+        <span class="test-label">Current Progress:</span>
+        <span class="test-value" id="progressValue">0%</span>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Elapsed Time:</span>
+        <span class="test-value" id="elapsedValue">0ms</span>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Frame Count:</span>
+        <span class="test-value" id="frameCount">0</span>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Estimated FPS:</span>
+        <span class="test-value" id="fpsValue">0</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check requestAnimationFrame support
+    const rafStatus = document.getElementById('rafStatus');
+    if (typeof requestAnimationFrame !== 'undefined') {
+      rafStatus.textContent = '✅ Supported';
+      rafStatus.style.color = '#2e7d32';
+    } else {
+      rafStatus.textContent = '❌ Not Supported';
+      rafStatus.style.color = '#c62828';
+      document.getElementById('status').classList.add('error');
+    }
+
+    // Simulate useCountUp hook behavior
+    function useCountUp(end, duration = 500, onUpdate) {
+      let count = 0;
+      let startTime = null;
+      let animationFrameId = null;
+      let frameCount = 0;
+      let lastFrameTime = null;
+
+      // If end is 0, no animation needed
+      if (end === 0) {
+        if (onUpdate) onUpdate(0, 0, 0, 0);
+        return { cancel: () => {} };
+      }
+
+      // Animation function using requestAnimationFrame
+      const animate = (currentTime) => {
+        // Set start time on first frame
+        if (startTime === null) {
+          startTime = currentTime;
+          lastFrameTime = currentTime;
+        }
+
+        // Calculate elapsed time
+        const elapsed = currentTime - startTime;
+        
+        // Calculate progress (0 to 1)
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function: ease-out cubic for natural deceleration
+        // Formula: 1 - (1 - x)^3
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+        // Calculate current value
+        const currentValue = end * easedProgress;
+        count = currentValue;
+
+        // Calculate FPS
+        frameCount++;
+        const fps = lastFrameTime ? 1000 / (currentTime - lastFrameTime) : 0;
+        lastFrameTime = currentTime;
+
+        // Call update callback
+        if (onUpdate) {
+          onUpdate(currentValue, progress, elapsed, fps);
+        }
+
+        // Continue animation if not complete
+        if (progress < 1) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      };
+
+      // Start animation
+      animationFrameId = requestAnimationFrame(animate);
+
+      // Return cancel function
+      return {
+        cancel: () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+          }
+        }
+      };
+    }
+
+    // Get DOM elements
+    const totalInput = document.getElementById('totalInput');
+    const pickedInput = document.getElementById('pickedInput');
+    const unpickedInput = document.getElementById('unpickedInput');
+    const durationInput = document.getElementById('durationInput');
+    const triggerBtn = document.getElementById('triggerBtn');
+    
+    const totalStat = document.getElementById('totalStat');
+    const pickedStat = document.getElementById('pickedStat');
+    const unpickedStat = document.getElementById('unpickedStat');
+    
+    const progressValue = document.getElementById('progressValue');
+    const elapsedValue = document.getElementById('elapsedValue');
+    const frameCountEl = document.getElementById('frameCount');
+    const fpsValue = document.getElementById('fpsValue');
+
+    let currentAnimations = [];
+
+    // Function to trigger animations
+    function triggerAnimations() {
+      // Cancel any existing animations
+      currentAnimations.forEach(anim => anim.cancel());
+      currentAnimations = [];
+
+      // Reset displays
+      totalStat.textContent = '0';
+      pickedStat.textContent = '0';
+      unpickedStat.textContent = '0';
+      progressValue.textContent = '0%';
+      elapsedValue.textContent = '0ms';
+      frameCountEl.textContent = '0';
+      fpsValue.textContent = '0';
+
+      // Get values
+      const totalTarget = parseInt(totalInput.value) || 0;
+      const pickedTarget = parseInt(pickedInput.value) || 0;
+      const unpickedTarget = parseInt(unpickedInput.value) || 0;
+      const duration = parseInt(durationInput.value) || 500;
+
+      let totalFrames = 0;
+      let totalFPS = 0;
+      let fpsCount = 0;
+
+      // Start animations
+      const totalAnim = useCountUp(totalTarget, duration, (value, progress, elapsed, fps) => {
+        totalStat.textContent = Math.round(value);
+        progressValue.textContent = Math.round(progress * 100) + '%';
+        elapsedValue.textContent = Math.round(elapsed) + 'ms';
+        totalFrames++;
+        frameCountEl.textContent = totalFrames;
+        if (fps > 0) {
+          totalFPS += fps;
+          fpsCount++;
+          fpsValue.textContent = Math.round(totalFPS / fpsCount);
+        }
+      });
+
+      const pickedAnim = useCountUp(pickedTarget, duration, (value) => {
+        pickedStat.textContent = Math.round(value);
+      });
+
+      const unpickedAnim = useCountUp(unpickedTarget, duration, (value) => {
+        unpickedStat.textContent = Math.round(value);
+      });
+
+      currentAnimations = [totalAnim, pickedAnim, unpickedAnim];
+    }
+
+    // Trigger on button click
+    triggerBtn.addEventListener('click', triggerAnimations);
+
+    // Trigger on page load
+    triggerAnimations();
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      currentAnimations.forEach(anim => anim.cancel());
+    });
+  </script>
+</body>
+</html>

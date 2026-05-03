@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from '../components/Header';
 import { orderService } from '../services/orderService';
 import { menuService } from '../services/menuService';
 import { cycleService } from '../services/cycleService';
+import { useFadeIn } from '../hooks/useAnimations';
+import { useToastContext } from '../context/ToastContext';
 
 export default function OrderPage() {
   const [cycle, setCycle] = useState(null);
@@ -13,7 +15,17 @@ export default function OrderPage() {
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [prevCycleStatus, setPrevCycleStatus] = useState(null);
+  
+  const { showToast } = useToastContext();
+
+  // Refs for scroll-triggered animations
+  const cycleCardRef = useRef(null);
+  const orderFormCardRef = useRef(null);
+
+  // Apply fade-in animations when cards enter viewport
+  useFadeIn(cycleCardRef, { threshold: 0.1, triggerOnce: true });
+  useFadeIn(orderFormCardRef, { threshold: 0.1, triggerOnce: true });
 
   useEffect(() => {
     loadData();
@@ -26,6 +38,15 @@ export default function OrderPage() {
         menuService.getCategories(),
         menuService.getMenuItems(),
       ]);
+
+      // Trigger badge animation if status changed
+      if (cycle && cycleData.status !== cycle.status) {
+        const badge = document.querySelector('.cycle-status-badge');
+        if (badge) {
+          badge.classList.add('badge-changing');
+          setTimeout(() => badge.classList.remove('badge-changing'), 400);
+        }
+      }
 
       setCycle(cycleData);
       setCategories(categoriesData);
@@ -52,7 +73,6 @@ export default function OrderPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setSuccess('');
 
     if (!selectedItemId) {
       setError('Vui lòng chọn đồ uống');
@@ -62,10 +82,10 @@ export default function OrderPage() {
     try {
       if (myOrder) {
         await orderService.updateOrder(myOrder.id, parseInt(selectedItemId), note);
-        setSuccess('Đã cập nhật đơn hàng thành công!');
+        showToast('Đã cập nhật đơn hàng thành công!', 'success');
       } else {
         await orderService.createOrder(parseInt(selectedItemId), note);
-        setSuccess('Đã đặt hàng thành công!');
+        showToast('Đã đặt hàng thành công!', 'success');
       }
       await loadData();
     } catch (err) {
@@ -98,11 +118,11 @@ export default function OrderPage() {
       <Header />
       <div className="container">
         {/* Cycle Status */}
-        <div className="card">
+        <div ref={cycleCardRef} className="card scroll-fade-in">
           <h2>Trạng thái chu kỳ</h2>
           {cycle && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{
+              <span className={`status-badge cycle-status-badge ${isCycleOpen ? 'status-open' : ''}`} style={{
                 padding: '0.25rem 0.75rem',
                 borderRadius: '12px',
                 fontSize: '0.85rem',
@@ -123,11 +143,10 @@ export default function OrderPage() {
         </div>
 
         {/* Order Form */}
-        <div className="card">
+        <div ref={orderFormCardRef} className="card stagger-1 scroll-fade-in">
           <h2>Đơn đặt nước của bạn</h2>
           
           {error && <div className="error">{error}</div>}
-          {success && <div className="success">{success}</div>}
 
           <form onSubmit={handleSubmit}>
             {/* Menu by Category */}
@@ -150,7 +169,7 @@ export default function OrderPage() {
                   </h3>
                   <div style={{ display: 'grid', gap: '0.75rem' }}>
                     {items.map(item => (
-                      <label key={item.id} style={{
+                      <label key={item.id} className="menu-item-card" style={{
                         display: 'flex',
                         alignItems: 'center',
                         padding: '0.75rem',
@@ -187,7 +206,7 @@ export default function OrderPage() {
               />
             </div>
 
-            <button type="submit" className="btn" disabled={!isCycleOpen}>
+            <button type="submit" className="btn btn-press hover-lift" disabled={!isCycleOpen}>
               {isCycleOpen 
                 ? (myOrder ? 'Cập nhật đơn hàng' : 'Đặt hàng')
                 : 'Chu kỳ đã đóng'

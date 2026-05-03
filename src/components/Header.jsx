@@ -19,7 +19,7 @@ export const Header = () => {
 
   return (
     <header style={styles.header}>
-      <h1 style={styles.title}>🥤 Hệ thống Đặt Nước</h1>
+      <h1 style={styles.title}><span className="emoji-bounce">🥤</span> Hệ thống Đặt Nước</h1>
       <div style={styles.actions}>
         <span style={styles.userInfo}>
           {user?.role === 'ADMIN' ? 'Admin: ' : ''}

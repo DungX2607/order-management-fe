@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from '../components/Header';
 import { AdminNav } from '../components/AdminNav';
 import { orderService } from '../services/orderService';
 import { cycleService } from '../services/cycleService';
 import axiosInstance from '../api/axios';
+import { useCountUp, useFadeIn } from '../hooks/useAnimations';
+import { useToastContext } from '../context/ToastContext';
 
 export default function AdminDashboard() {
   const [cycle, setCycle] = useState(null);
@@ -13,10 +15,22 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [confirming, setConfirming] = useState(false);
   const [targetPickedUp, setTargetPickedUp] = useState(true);
+  const [confirmingCycleAction, setConfirmingCycleAction] = useState(null); // 'open' or 'close'
+  
+  const { showToast } = useToastContext();
+
+  // Refs for scroll-triggered animations
+  const cycleCardRef = useRef(null);
+  const statsCardRef = useRef(null);
+  const ordersCardRef = useRef(null);
+
+  // Apply fade-in animations when cards enter viewport
+  useFadeIn(cycleCardRef, { threshold: 0.1, triggerOnce: true });
+  useFadeIn(statsCardRef, { threshold: 0.1, triggerOnce: true });
+  useFadeIn(ordersCardRef, { threshold: 0.1, triggerOnce: true });
 
   useEffect(() => {
     loadData();
@@ -24,13 +38,42 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!loading) {
-      loadData();
+      // Animate rows fading out before filter
+      const rows = document.querySelectorAll('table tbody tr');
+      rows.forEach(row => {
+        row.classList.add('table-row-fade-out');
+      });
+      
+      // Apply filter after fade out animation
+      setTimeout(() => {
+        loadData();
+        
+        // Animate rows fading in after filter
+        setTimeout(() => {
+          const newRows = document.querySelectorAll('table tbody tr');
+          newRows.forEach(row => {
+            row.classList.remove('table-row-fade-out');
+            row.classList.add('table-row-fade-in');
+            setTimeout(() => row.classList.remove('table-row-fade-in'), 300);
+          });
+        }, 50);
+      }, 300);
     }
   }, [statusFilter, searchTerm]);
 
   const loadData = async () => {
     try {
       const cycleData = await cycleService.getCurrentCycle();
+      
+      // Trigger badge animation if status changed
+      if (cycle && cycleData.status !== cycle.status) {
+        const badge = document.querySelector('.cycle-status-badge');
+        if (badge) {
+          badge.classList.add('badge-changing');
+          setTimeout(() => badge.classList.remove('badge-changing'), 400);
+        }
+      }
+      
       setCycle(cycleData);
       
       // Load orders with filters
@@ -45,24 +88,28 @@ export default function AdminDashboard() {
   };
 
   const handleOpenCycle = async () => {
-    if (!confirm('Bạn có chắc muốn mở chu kỳ mới?')) return;
-    try {
-      await cycleService.openCycle();
-      setSuccess('Đã mở chu kỳ mới');
-      await loadData();
-    } catch (err) {
-      setError(err.response?.data?.message || 'Không thể mở chu kỳ');
-    }
+    setConfirmingCycleAction('open');
   };
 
   const handleCloseCycle = async () => {
-    if (!confirm('Bạn có chắc muốn đóng chu kỳ hiện tại?')) return;
+    setConfirmingCycleAction('close');
+  };
+
+  const handleConfirmCycleAction = async () => {
+    const action = confirmingCycleAction;
+    setConfirmingCycleAction(null);
+    
     try {
-      await cycleService.closeCycle();
-      setSuccess('Đã đóng chu kỳ');
+      if (action === 'open') {
+        await cycleService.openCycle();
+        showToast('Đã mở chu kỳ mới', 'success');
+      } else if (action === 'close') {
+        await cycleService.closeCycle();
+        showToast('Đã đóng chu kỳ', 'success');
+      }
       await loadData();
     } catch (err) {
-      setError(err.response?.data?.message || 'Không thể đóng chu kỳ');
+      setError(err.response?.data?.message || `Không thể ${action === 'open' ? 'mở' : 'đóng'} chu kỳ`);
     }
   };
 
@@ -109,8 +156,17 @@ export default function AdminDashboard() {
         setFilteredOrders(refiltered);
         return updated;
       });
-      setSuccess(`Đã cập nhật ${count} đơn`);
-      setTimeout(() => setSuccess(''), 2000);
+      
+      // Trigger row pulse animation for updated rows
+      idsToUpdate.forEach(id => {
+        const row = document.querySelector(`tr[data-order-id="${id}"]`);
+        if (row) {
+          row.classList.add('row-updated');
+          setTimeout(() => row.classList.remove('row-updated'), 600);
+        }
+      });
+      
+      showToast(`Đã cập nhật ${count} đơn`, 'success');
     } catch (err) {
       setError('Không thể cập nhật trạng thái');
     }
@@ -165,6 +221,11 @@ export default function AdminDashboard() {
     unpicked: orders.filter(o => !o.pickedUp).length,
   };
 
+  // Animate stat numbers with count-up effect
+  const animatedTotal = useCountUp(stats.total, 500);
+  const animatedPicked = useCountUp(stats.picked, 500);
+  const animatedUnpicked = useCountUp(stats.unpicked, 500);
+
   if (loading) {
     return (
       <>
@@ -184,14 +245,33 @@ export default function AdminDashboard() {
     <>
       <Header />
       <AdminNav />
+      
+      {/* Confirm cycle action dialog */}
+      {confirmingCycleAction && (
+        <div style={styles.overlay} className="modal-backdrop">
+          <div style={styles.dialog} className="modal-content">
+            <p>
+              {confirmingCycleAction === 'open'
+                ? <span>Bạn có chắc muốn <strong>mở chu kỳ mới</strong>?</span>
+                : <span>Bạn có chắc muốn <strong>đóng chu kỳ hiện tại</strong>?</span>
+              }
+            </p>
+            <div className="modal-actions">
+              <button className="btn btn-press hover-lift" onClick={handleConfirmCycleAction}>OK</button>
+              <button className="btn btn-secondary btn-press hover-lift" onClick={() => setConfirmingCycleAction(null)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="container">
         {/* Cycle Control */}
-        <div className="card">
+        <div ref={cycleCardRef} className="card scroll-fade-in">
           <h2>Điều khiển chu kỳ</h2>
           {cycle && (
             <div style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                <span style={{
+                <span className={`status-badge cycle-status-badge ${isCycleOpen ? 'status-open' : ''}`} style={{
                   padding: '0.25rem 0.75rem',
                   borderRadius: '12px',
                   fontSize: '0.85rem',
@@ -211,40 +291,39 @@ export default function AdminDashboard() {
             </div>
           )}
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <button onClick={handleOpenCycle} className="btn" disabled={isCycleOpen}>
+            <button onClick={handleOpenCycle} className="btn btn-press hover-lift" disabled={isCycleOpen}>
               Mở chu kỳ
             </button>
-            <button onClick={handleCloseCycle} className="btn btn-danger" disabled={!isCycleOpen}>
+            <button onClick={handleCloseCycle} className="btn btn-danger btn-press hover-lift" disabled={!isCycleOpen}>
               Đóng chu kỳ
             </button>
           </div>
         </div>
 
         {/* Statistics */}
-        <div className="card">
+        <div ref={statsCardRef} className="card stagger-1 scroll-fade-in">
           <h2>Thống kê</h2>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <div style={styles.statCard}>
-              <div style={styles.statNumber}>{stats.total}</div>
+              <div style={styles.statNumber}>{Math.round(animatedTotal)}</div>
               <div style={styles.statLabel}>Tổng đơn</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statNumber}>{stats.picked}</div>
+              <div style={styles.statNumber}>{Math.round(animatedPicked)}</div>
               <div style={styles.statLabel}>Đã lấy</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statNumber}>{stats.unpicked}</div>
+              <div style={styles.statNumber}>{Math.round(animatedUnpicked)}</div>
               <div style={styles.statLabel}>Chưa lấy</div>
             </div>
           </div>
         </div>
 
         {/* Orders List */}
-        <div className="card">
+        <div ref={ordersCardRef} className="card stagger-2 scroll-fade-in">
           <h2>Danh sách đơn hàng</h2>
 
           {error && <div className="error">{error}</div>}
-          {success && <div className="success">{success}</div>}
 
           {/* Filters */}
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
@@ -267,7 +346,7 @@ export default function AdminDashboard() {
             />
 
             <button onClick={handleExportExcel} className="btn">
-              📥 Xuất Excel
+              <span className="emoji-bounce">📥</span> Xuất Excel
             </button>
           </div>
 
@@ -276,10 +355,10 @@ export default function AdminDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', padding: '0.75rem 1rem', backgroundColor: '#e8f5e9', borderRadius: '6px' }}>
               <span>Đã chọn <strong>{selectedIds.size}</strong> đơn</span>
               <button className="btn" onClick={() => { setTargetPickedUp(true); setConfirming(true); }}>
-                ✅ Xác nhận đã lấy
+                <span className="emoji-bounce">✅</span> Xác nhận đã lấy
               </button>
               <button className="btn btn-danger" onClick={() => { setTargetPickedUp(false); setConfirming(true); }}>
-                ↩ Hủy đã lấy
+                <span className="emoji-bounce">↩</span> Hủy đã lấy
               </button>
               <button className="btn btn-secondary" onClick={() => setSelectedIds(new Set())}>
                 Bỏ chọn
@@ -287,19 +366,19 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Confirm dialog */}
+          {/* Confirm pickup dialog */}
           {confirming && (
-            <div style={styles.overlay}>
-              <div style={styles.dialog}>
+            <div style={styles.overlay} className="modal-backdrop">
+              <div style={styles.dialog} className="modal-content">
                 <p>
                   {targetPickedUp
                     ? <span>Xác nhận <strong>đánh dấu đã lấy</strong> cho <strong>{selectedIds.size}</strong> đơn?</span>
                     : <span>Xác nhận <strong>hủy trạng thái đã lấy</strong> cho <strong>{selectedIds.size}</strong> đơn?</span>
                   }
                 </p>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                  <button className="btn btn-secondary" onClick={() => setConfirming(false)}>Hủy</button>
-                  <button className="btn" onClick={handleConfirmPickup}>OK</button>
+                <div className="modal-actions">
+                  <button className="btn btn-press hover-lift" onClick={handleConfirmPickup}>OK</button>
+                  <button className="btn btn-secondary btn-press hover-lift" onClick={() => setConfirming(false)}>Hủy</button>
                 </div>
               </div>
             </div>
@@ -333,6 +412,7 @@ export default function AdminDashboard() {
                 {filteredOrders.map((order, index) => (
                   <tr
                     key={order.id}
+                    data-order-id={order.id}
                     style={{ backgroundColor: selectedIds.has(order.id) ? '#f0fff0' : 'inherit', cursor: 'pointer' }}
                     onClick={() => handleSelectOrder(order.id)}
                   >
@@ -350,7 +430,7 @@ export default function AdminDashboard() {
                     <td>{order.menuItemName}</td>
                     <td>{order.note || '-'}</td>
                     <td>
-                      <span style={{
+                      <span className="status-badge" style={{
                         padding: '0.25rem 0.75rem',
                         borderRadius: '12px',
                         fontSize: '0.85rem',
@@ -358,7 +438,7 @@ export default function AdminDashboard() {
                         backgroundColor: order.pickedUp ? '#d1ecf1' : '#fff3cd',
                         color: order.pickedUp ? '#0c5460' : '#856404',
                       }}>
-                        {order.pickedUp ? '✅ Đã lấy' : '⏳ Chưa lấy'}
+                        {order.pickedUp ? <><span className="emoji-bounce">✅</span> Đã lấy</> : <><span className="emoji-bounce">⏳</span> Chưa lấy</>}
                       </span>
                     </td>
                   </tr>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading States Demo</title>
+  <style>
+    :root {
+      --primary-color: #4CAF50;
+      --danger-color: #f44336;
+      --text-color: #333;
+      --border-color: #ddd;
+      --bg-color: #f5f5f5;
+      
+      /* Animation Variables */
+      --anim-duration-fast: 100ms;
+      --anim-duration-normal: 200ms;
+      --anim-duration-medium: 300ms;
+      --anim-duration-slow: 400ms;
+      --anim-duration-slower: 600ms;
+      --anim-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --anim-ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text-color);
+      background-color: var(--bg-color);
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      color: var(--primary-color);
+    }
+
+    h2 {
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary-color);
+    }
+
+    h3 {
+      margin: 1.5rem 0 0.75rem;
+      font-size: 1.1rem;
+    }
+
+    .demo-section {
+      margin-bottom: 3rem;
+    }
+
+    .demo-row {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .demo-item {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: transform 200ms, filter 200ms;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+
+    /* Skeleton Styles */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s linear infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      height: 14px;
+      margin-bottom: 8px;
+    }
+
+    .skeleton-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+    }
+
+    .skeleton-rectangle {
+      width: 120px;
+      height: 40px;
+    }
+
+    .skeleton-card {
+      width: 100%;
+      max-width: 400px;
+      height: 200px;
+      border-radius: 8px;
+    }
+
+    /* Spinner Styles */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid var(--primary-color);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      will-change: transform;
+    }
+
+    .spinner-small {
+      width: 20px;
+      height: 20px;
+      border-width: 2px;
+    }
+
+    .spinner-large {
+      width: 60px;
+      height: 60px;
+      border-width: 5px;
+    }
+
+    .spinner-white {
+      border-color: rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+    }
+
+    .spinner-danger {
+      border-top-color: var(--danger-color);
+    }
+
+    /* Button Loading */
+    .btn-loading {
+      position: relative;
+      color: transparent !important;
+      pointer-events: none;
+    }
+
+    .btn-loading::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Loading Dots */
+    @keyframes pulse-dot {
+      0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+      }
+      40% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    .loading-dots {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .loading-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      animation: pulse-dot 1.4s ease-in-out infinite;
+    }
+
+    .loading-dot:nth-child(1) { animation-delay: 0s; }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Transition Demo */
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .transition-demo {
+      position: relative;
+      min-height: 200px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .transition-demo.loading .skeleton-layer {
+      display: block;
+    }
+
+    .transition-demo.loading .content-layer {
+      display: none;
+    }
+
+    .transition-demo.loaded .skeleton-layer {
+      animation: fadeOut 300ms ease-out forwards;
+    }
+
+    .transition-demo.loaded .content-layer {
+      display: block;
+      animation: fadeIn 300ms ease-out forwards;
+      animation-delay: 150ms;
+      opacity: 0;
+    }
+
+    .dark-bg {
+      background: #333;
+      padding: 2rem;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 Loading States Demo</h1>
+    <p>Demonstrates skeleton loaders, enhanced spinners, and loading transitions.</p>
+
+    <!-- Skeleton Loaders -->
+    <div class="demo-section">
+      <h2>1. Skeleton Loaders</h2>
+      
+      <h3>Basic Variants</h3>
+      <div class="demo-row">
+        <div class="demo-item">
+          <p><strong>Text Skeleton:</strong></p>
+          <div class="skeleton skeleton-text" style="width: 200px;"></div>
+          <div class="skeleton skeleton-text" style="width: 180px;"></div>
+          <div class="skeleton skeleton-text" style="width: 220px;"></div>
+        </div>
+        
+        <div class="demo-item">
+          <p><strong>Circle Skeleton:</strong></p>
+          <div class="skeleton skeleton-circle"></div>
+        </div>
+        
+        <div class="demo-item">
+          <p><strong>Rectangle Skeleton:</strong></p>
+          <div class="skeleton skeleton-rectangle"></div>
+        </div>
+      </div>
+
+      <h3>Card Skeleton</h3>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+
+    <!-- Enhanced Spinners -->
+    <div class="demo-section">
+      <h2>2. Enhanced Spinners</h2>
+      
+      <h3>Sizes</h3>
+      <div class="demo-row">
+        <div class="demo-item">
+          <p><strong>Small:</strong></p>
+          <div class="spinner spinner-small"></div>
+        </div>
+        
+        <div class="demo-item">
+          <p><strong>Medium:</strong></p>
+          <div class="spinner"></div>
+        </div>
+        
+        <div class="demo-item">
+          <p><strong>Large:</strong></p>
+          <div class="spinner spinner-large"></div>
+        </div>
+      </div>
+
+      <h3>Colors</h3>
+      <div class="demo-row">
+        <div class="demo-item">
+          <p><strong>Primary:</strong></p>
+          <div class="spinner"></div>
+        </div>
+        
+        <div class="demo-item dark-bg">
+          <p style="color: white;"><strong>White:</strong></p>
+          <div class="spinner spinner-white"></div>
+        </div>
+        
+        <div class="demo-item">
+          <p><strong>Danger:</strong></p>
+          <div class="spinner spinner-danger"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Buttons -->
+    <div class="demo-section">
+      <h2>3. Loading Buttons</h2>
+      
+      <div class="demo-row">
+        <button class="btn">Normal Button</button>
+        <button class="btn btn-loading">Loading Button</button>
+      </div>
+    </div>
+
+    <!-- Loading Dots -->
+    <div class="demo-section">
+      <h2>4. Loading Dots</h2>
+      
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+    </div>
+
+    <!-- Transition Demo -->
+    <div class="demo-section">
+      <h2>5. Loading Transition</h2>
+      <p>Click the button to toggle between loading skeleton and content:</p>
+      
+      <button class="btn" onclick="toggleTransition()" style="margin-bottom: 1rem;">
+        Toggle Loading
+      </button>
+      
+      <div id="transitionDemo" class="transition-demo loading">
+        <div class="skeleton-layer">
+          <div class="skeleton skeleton-text" style="width: 80%;"></div>
+          <div class="skeleton skeleton-text" style="width: 90%;"></div>
+          <div class="skeleton skeleton-text" style="width: 70%;"></div>
+          <div class="skeleton skeleton-text" style="width: 85%;"></div>
+        </div>
+        <div class="content-layer">
+          <h3>✅ Content Loaded!</h3>
+          <p>This is the actual content that appears after loading.</p>
+          <p>The skeleton smoothly fades out and this content fades in.</p>
+          <p>Notice the smooth transition between states.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleTransition() {
+      const demo = document.getElementById('transitionDemo');
+      if (demo.classList.contains('loading')) {
+        demo.classList.remove('loading');
+        demo.classList.add('loaded');
+      } else {
+        demo.classList.remove('loaded');
+        demo.classList.add('loading');
+      }
+    }
+  </script>
+</body>
+</html>

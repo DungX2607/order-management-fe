@@ -91,7 +91,7 @@ export default function UserManagement() {
         {success && <div className="success" style={{ marginBottom: '1rem' }}>{success}</div>}
 
         {/* Create User Form */}
-        <div className="card">
+        <div className="card fade-in">
           <h2>Tạo tài khoản mới</h2>
           <form onSubmit={handleCreateUser}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -139,12 +139,12 @@ export default function UserManagement() {
               </div>
             </div>
 
-            <button type="submit" className="btn">Tạo tài khoản</button>
+            <button type="submit" className="btn btn-press hover-lift">Tạo tài khoản</button>
           </form>
         </div>
 
         {/* Users List */}
-        <div className="card">
+        <div className="card scale-in stagger-1">
           <h2>Danh sách tài khoản ({users.length})</h2>
           
           {users.length === 0 ? (
@@ -194,7 +194,7 @@ export default function UserManagement() {
                     <td>
                       <button 
                         onClick={() => handleDeleteUser(user.id, user.username)}
-                        className="btn btn-danger"
+                        className="btn btn-danger btn-press hover-lift"
                         style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
                         disabled={user.role === 'ADMIN'}
                         title={user.role === 'ADMIN' ? 'Không thể xóa tài khoản Admin' : 'Xóa tài khoản'}

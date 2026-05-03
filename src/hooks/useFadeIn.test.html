@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useFadeIn Hook Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .spacer {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-box {
+      width: 300px;
+      height: 200px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 300ms ease-out;
+    }
+
+    .test-box.fade-in {
+      opacity: 1;
+    }
+
+    .info {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .info h2 {
+      margin-top: 0;
+      color: #667eea;
+    }
+
+    .info ul {
+      line-height: 1.8;
+    }
+
+    .controls {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .controls label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .controls input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .status {
+      background: #e8f5e9;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 useFadeIn Hook Test</h1>
+    
+    <div class="info">
+      <h2>Test Instructions</h2>
+      <ul>
+        <li>Scroll down to see boxes fade in as they enter the viewport</li>
+        <li>Box 1: Triggers once (default behavior)</li>
+        <li>Box 2: Triggers every time it enters/exits viewport</li>
+        <li>Box 3: Higher threshold (50% visible before triggering)</li>
+        <li>Box 4: Custom root margin (triggers earlier)</li>
+      </ul>
+    </div>
+
+    <div class="controls">
+      <h2>Controls</h2>
+      <label>
+        <input type="checkbox" id="reducedMotion">
+        Simulate prefers-reduced-motion
+      </label>
+      <div class="status" id="status">
+        IntersectionObserver: <span id="ioStatus">Checking...</span>
+      </div>
+    </div>
+
+    <div class="spacer">
+      <p>👇 Scroll down to see the fade-in effects 👇</p>
+    </div>
+
+    <div class="spacer">
+      <div class="test-box" id="box1">
+        Box 1: Trigger Once
+      </div>
+    </div>
+
+    <div class="spacer">
+      <div class="test-box" id="box2">
+        Box 2: Trigger Multiple
+      </div>
+    </div>
+
+    <div class="spacer">
+      <div class="test-box" id="box3">
+        Box 3: High Threshold (50%)
+      </div>
+    </div>
+
+    <div class="spacer">
+      <div class="test-box" id="box4">
+        Box 4: Root Margin (-100px)
+      </div>
+    </div>
+
+    <div class="spacer">
+      <p>✅ End of test page</p>
+    </div>
+  </div>
+
+  <script>
+    // Check IntersectionObserver support
+    const ioStatus = document.getElementById('ioStatus');
+    if (typeof IntersectionObserver !== 'undefined') {
+      ioStatus.textContent = '✅ Supported';
+      ioStatus.style.color = '#2e7d32';
+    } else {
+      ioStatus.textContent = '❌ Not Supported';
+      ioStatus.style.color = '#c62828';
+    }
+
+    // Simulate useFadeIn hook behavior
+    function useFadeIn(element, options = {}) {
+      const {
+        threshold = 0.1,
+        rootMargin = '0px',
+        triggerOnce = true,
+      } = options;
+
+      // Early return if element doesn't exist or IntersectionObserver is not supported
+      if (!element || typeof IntersectionObserver === 'undefined') {
+        if (element) {
+          element.classList.add('fade-in');
+        }
+        return null;
+      }
+
+      // Create intersection observer
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('fade-in');
+              
+              if (triggerOnce) {
+                observer.unobserve(entry.target);
+              }
+            } else if (!triggerOnce) {
+              entry.target.classList.remove('fade-in');
+            }
+          });
+        },
+        {
+          threshold,
+          rootMargin,
+        }
+      );
+
+      observer.observe(element);
+
+      return observer;
+    }
+
+    // Initialize observers for each box
+    const box1 = document.getElementById('box1');
+    const box2 = document.getElementById('box2');
+    const box3 = document.getElementById('box3');
+    const box4 = document.getElementById('box4');
+
+    const observer1 = useFadeIn(box1, { triggerOnce: true });
+    const observer2 = useFadeIn(box2, { triggerOnce: false });
+    const observer3 = useFadeIn(box3, { threshold: 0.5 });
+    const observer4 = useFadeIn(box4, { rootMargin: '-100px' });
+
+    // Reduced motion simulation
+    const reducedMotionCheckbox = document.getElementById('reducedMotion');
+    reducedMotionCheckbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.body.style.setProperty('--anim-duration-medium', '50ms');
+        document.querySelectorAll('.test-box').forEach(box => {
+          box.style.transitionDuration = '50ms';
+        });
+      } else {
+        document.body.style.setProperty('--anim-duration-medium', '300ms');
+        document.querySelectorAll('.test-box').forEach(box => {
+          box.style.transitionDuration = '300ms';
+        });
+      }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      [observer1, observer2, observer3, observer4].forEach(obs => {
+        if (obs) obs.disconnect();
+      });
+    });
+  </script>
+</body>
+</html>

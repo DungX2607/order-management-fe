@@ -4,6 +4,7 @@ import { ToastProvider } from './context/ToastContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import PageTransition from './components/PageTransition';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import OrderPage from './pages/OrderPage';
 import AdminDashboard from './pages/AdminDashboard';
 import MenuManagement from './pages/MenuManagement';
@@ -18,6 +19,11 @@ function App() {
             <Route path="/login" element={
               <PageTransition>
                 <Login />
+              </PageTransition>
+            } />
+            <Route path="/register" element={
+              <PageTransition>
+                <Register />
               </PageTransition>
             } />
             

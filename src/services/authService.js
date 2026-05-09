@@ -6,6 +6,11 @@ export const authService = {
     return response.data;
   },
 
+  register: async (username, fullName, password) => {
+    const response = await axios.post('/auth/register', { username, fullName, password });
+    return response.data;
+  },
+
   logout: async () => {
     await axios.post('/auth/logout');
   },

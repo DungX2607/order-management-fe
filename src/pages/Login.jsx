@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 
@@ -69,6 +69,9 @@ export default function Login() {
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
+        <p style={{ textAlign: 'center', marginTop: '1rem' }}>
+          Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
+        </p>
       </div>
     </div>
   );
